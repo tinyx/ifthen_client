@@ -1,12 +1,14 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useContext } from "react";
 import { useParams } from "react-router";
 import useWebSocket from "react-use-websocket";
 import { useResource } from "react-request-hook";
 import MoveSelector from "./components/MoveSelector";
 import PreviousMove from "./components/PreviousMove";
+import useAuth from "../../hooks/useAuth";
 
 const GameView = () => {
   const { gameId } = useParams();
+  const { jwt } = useAuth();
   const [game, getGame] = useResource(id => ({
     url: `/games/${id}`,
     method: "GET"
@@ -19,12 +21,21 @@ const GameView = () => {
     []
   );
   const [sendMessage, lastMessage, readyState, getWebSocket] = useWebSocket(
-    `ws://yitao.io/ws/game/${gameId}`,
+    `ws://yitao.io/ws/game/${gameId}` +
+      (jwt === undefined ? "" : `?jwt=${jwt}`),
     STATIC_OPTIONS
   );
 
   useEffect(() => getGame(gameId), []);
-  useEffect(() => getWebSocket(), []);
+  useEffect(getWebSocket, []);
+  useEffect(() => {
+    if (lastMessage !== null) {
+      const data = JSON.parse(lastMessage.data);
+      if (data.type === "refresh game") {
+        getGame(gameId);
+      }
+    }
+  }, [lastMessage]);
 
   if (game.isLoading || game.data === undefined) {
     return <div>Loading Game Data</div>;
@@ -70,6 +81,7 @@ const GameView = () => {
       <div>Player 1: {game.data.player1_user || "Not joined"}</div>
       <div>Player 2: {game.data.player2_user || "Not joined"}</div>
       <div>{moves}</div>
+      <div>{readyState}</div>
     </div>
   );
 };
