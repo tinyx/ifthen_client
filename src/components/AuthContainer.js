@@ -1,9 +1,9 @@
 import React from "react";
-import useUser from "../hooks/useAuth";
+import useAuth from "../hooks/useAuth";
 import UserContext from "./AuthContext";
 
 const AuthContainer = ({ children }) => {
-  const { user, logout } = useUser();
+  const { user, logout } = useAuth();
   return (
     <>
       <div>
