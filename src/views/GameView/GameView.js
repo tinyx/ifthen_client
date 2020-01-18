@@ -1,14 +1,15 @@
-import React, { useEffect, useMemo, useContext } from "react";
+import React, { useEffect, useMemo } from "react";
 import { useParams } from "react-router";
 import useWebSocket from "react-use-websocket";
 import { useResource } from "react-request-hook";
 import MoveSelector from "./components/MoveSelector";
 import PreviousMove from "./components/PreviousMove";
+import PlayerStats from "./components/PlayerStats";
 import useAuth from "../../hooks/useAuth";
 
 const GameView = () => {
   const { gameId } = useParams();
-  const { jwt } = useAuth();
+  const { user, jwt } = useAuth();
   const [game, getGame] = useResource(id => ({
     url: `/games/${id}`,
     method: "GET"
@@ -16,7 +17,7 @@ const GameView = () => {
   const STATIC_OPTIONS = useMemo(
     () => ({
       onOpen: () => console.log("opened"),
-      shouldReconnect: closeEvent => true //Will attempt to reconnect on all close events, such as server shutting down
+      shouldReconnect: closeEvent => true
     }),
     []
   );
@@ -78,10 +79,26 @@ const GameView = () => {
       >
         Join
       </button>
-      <div>Player 1: {game.data.player1_user || "Not joined"}</div>
-      <div>Player 2: {game.data.player2_user || "Not joined"}</div>
+      <div style={{ display: "flex" }}>
+        <div>
+          <div>Player 1: {game.data.player1_user || "Not joined"}</div>
+          <div>Player Initial Stats:</div>
+          <PlayerStats playerStats={game.data.player1_initial_stats} />
+        </div>
+        <div style={{ marginLeft: 40 }}>
+          <div>Player 2: {game.data.player2_user || "Not joined"}</div>
+          <div>Player Initial Stats:</div>
+          <PlayerStats playerStats={game.data.player2_initial_stats} />
+        </div>
+      </div>
       <div>{moves}</div>
-      <div>{readyState}</div>
+      {!game.data.is_draw && user.user_id === game.data.winner ? (
+        <div>You win!</div>
+      ) : null}
+      {!game.data.is_draw && user.user_id === game.data.loser ? (
+        <div>You lose!</div>
+      ) : null}
+      {game.data.is_draw ? <div>Draw Game</div> : null}
     </div>
   );
 };
