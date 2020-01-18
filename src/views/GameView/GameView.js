@@ -92,10 +92,10 @@ const GameView = () => {
         </div>
       </div>
       <div>{moves}</div>
-      {!game.data.is_draw && user.user_id === game.data.winner ? (
+      {!game.data.is_draw && user?.user_id === game.data.winner ? (
         <div>You win!</div>
       ) : null}
-      {!game.data.is_draw && user.user_id === game.data.loser ? (
+      {!game.data.is_draw && user?.user_id === game.data.loser ? (
         <div>You lose!</div>
       ) : null}
       {game.data.is_draw ? <div>Draw Game</div> : null}
